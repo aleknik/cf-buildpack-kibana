@@ -62,7 +62,7 @@ if [[ -n ${KIBANA_PLUGINS:-""} ]]; then
 		step "Installing Kibana Plugins"
         for PLUGIN in "${KIBANA_PLUGINS[@]}"; do
                 start "Installing Kibana Plugin ${PLUGIN}"
-                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana install -i ${PLUGIN} | indent
+                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i ${PLUGIN} | indent
                 finished
         done
 fi
