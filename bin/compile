@@ -57,6 +57,16 @@ if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
 	step "downloaded ${KIBANA_URL}"
 fi
 
+# Install Kibana Plugins
+if [[ -n ${KIBANA_PLUGINS:-""} ]]; then
+		step "Installing Kibana Plugins"
+        for PLUGIN in "${KIBANA_PLUGINS[@]}"; do
+                start "Installing Kibana Plugin ${PLUGIN}"
+                ${BUILDDIR}/logstash-${KIBANA_VERSION}/bin/kibana install -i ${PLUGIN} | indent
+                finished
+        done
+fi
+
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
 ---
 default_process_types:
