@@ -27,6 +27,7 @@ source ${BUILDDIR}/Kibana
 # Default Values
 KIBANA_CMD_ARGS=${KIBANA_CMD_ARGS:-""}
 KIBANA_PLUGINS=${KIBANA_PLUGINS:-""}
+KIBANA_PLUGINS_URL=${KIBANA_PLUGINS_URL:-""}
 KIBANA_VERSION=${KIBANA_VERSION:-$(cat ${BP}/VERSION)}
 KIBANA_FILE=${KIBANA_FILE:-"kibana-${KIBANA_VERSION}.tar.gz"}
 KIBANA_URL=${KIBANA_URL:-"https://download.elastic.co/kibana/kibana/${KIBANA_FILE}"}
@@ -64,6 +65,18 @@ if [[ -n ${KIBANA_PLUGINS:-""} ]]; then
                 start "Installing Kibana Plugin ${PLUGIN}"
                 ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i ${PLUGIN} | indent
                 finished
+        done
+fi
+
+# Install Kibana Plugins from URL
+if [[ -n ${KIBANA_PLUGINS_URL:-""} ]]; then
+		step "Installing Kibana Plugins from URL"
+		I=0
+        for PLUGIN in "${KIBANA_PLUGINS_URL[@]}"; do
+                start "Installing Kibana Plugin from URL: ${PLUGIN}"
+                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i plugins_$I -u ${PLUGIN} | indent
+                finished
+                I=$((I+1))
         done
 fi
 
