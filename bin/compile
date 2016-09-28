@@ -44,14 +44,6 @@ if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
 	step "downloaded ${DOCKERIZE_URL}"
 fi
 
-if [[ ! -f ${BUILDDIR}/bin/jq ]]; then
-	start "Installing jq"
-	${CURL} -o ${BUILDDIR}/bin/jq ${JQ_URL}
-	chmod +x ${BUILDDIR}/bin/jq
-	finished
-	step "downloaded ${JQ_URL}"
-fi
-
 if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
 	start "Installing Kibana ${KIBANA_VERSION}"
 	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
