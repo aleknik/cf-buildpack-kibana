@@ -60,8 +60,5 @@ fi
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
 ---
 default_process_types:
-  web: dockerize -template kibana.yml:kibana-${KIBANA_VERSION}/config/kibana.yml kibana-${KIBANA_VERSION}/bin/kibana
+  web: bin/dockerize -template kibana.yml:kibana.yml kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml
 EOF
-
-mkdir -p ${BUILDDIR}/.profile.d
-echo 'PATH=$PATH:$HOME/bin' > ${BUILDDIR}/.profile.d/kibana.sh
