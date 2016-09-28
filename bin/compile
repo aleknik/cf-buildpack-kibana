@@ -33,6 +33,7 @@ KIBANA_URL=${KIBANA_URL:-"https://download.elastic.co/kibana/kibana/${KIBANA_FIL
 SHA1_EXT=${SHA1_EXT:-".sha1.txt"}
 DOCKERIZE_VERSION=${DOCKERIZE_VERSION:-"v0.2.1-jsonQuery-templateDirs"}
 DOCKERIZE_URL=${DOCKERIZE_URL:-"https://github.com/breml/dockerize/releases/download/v0.2.1-jsonQuery%2BtemplateDirs/dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz"}
+JQ_URL=${JQ_URL:-"https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"}
 
 mkdir -p ${BUILDDIR}/bin
 
@@ -42,6 +43,14 @@ if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
 	${CURL} ${DOCKERIZE_URL} | tar zxf -
 	finished
 	step "downloaded ${DOCKERIZE_URL}"
+fi
+
+if [[ ! -f ${BUILDDIR}/bin/jq ]]; then
+	start "Installing jq"
+	${CURL} -o ${BUILDDIR}/bin/jq ${JQ_URL}
+	chmod +x ${BUILDDIR}/bin/jq
+	finished
+	step "downloaded ${JQ_URL}"
 fi
 
 if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
@@ -63,7 +72,12 @@ default_process_types:
   web: bin/dockerize -template kibana.yml:kibana.yml /bin/bash -c bin/kibana.sh
 EOF
 
+ES_HOST=$(echo $VCAP_SERVICES | jq '.elk.[0].credentials.elasticSearchHost')
+ES_PORT=$(echo $VCAP_SERVICES | jq '.elk.[0].credentials.elasticSearchPort')
+
 echo '#!/bin/bash' > ${BUILDDIR}/bin/kibana.sh
 echo 'cat kibana.yml' >> ${BUILDDIR}/bin/kibana.sh
-echo "kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml" >> ${BUILDDIR}/bin/kibana.sh
+echo 'cat bin/kibana.sh' >> ${BUILDDIR}/bin/kibana.sh
+# echo "kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml" >> ${BUILDDIR}/bin/kibana.sh
+echo "kibana-${KIBANA_VERSION}/bin/kibana -p $PORT -e http://$ES_HOST:$ES_PORT/" >> ${BUILDDIR}/bin/kibana.sh
 chmod +x ${BUILDDIR}/bin/kibana.sh
