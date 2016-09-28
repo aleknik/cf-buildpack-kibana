@@ -71,10 +71,10 @@ fi
 # Install Kibana Plugins from URL
 if [[ -n ${KIBANA_PLUGINS_URL:-""} ]]; then
 		step "Installing Kibana Plugins from URL"
-		I=0
+		I=1
         for PLUGIN in "${KIBANA_PLUGINS_URL[@]}"; do
                 start "Installing Kibana Plugin from URL: ${PLUGIN}"
-                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i plugins_$I -u ${PLUGIN} | indent
+                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i url_plugin_$I -u ${PLUGIN} | indent
                 finished
                 I=$((I+1))
         done
