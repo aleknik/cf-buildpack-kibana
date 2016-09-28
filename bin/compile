@@ -28,7 +28,7 @@ source ${BUILDDIR}/Kibana
 KIBANA_CMD_ARGS=${KIBANA_CMD_ARGS:-""}
 KIBANA_PLUGINS=${KIBANA_PLUGINS:-""}
 KIBANA_VERSION=${KIBANA_VERSION:-$(cat ${BP}/VERSION)}
-KIBANA_FILE=${KIBANA_FILE:-"kibana-${KIBANA_VERSION}-linux-x86_64.tar.gz"}
+KIBANA_FILE=${KIBANA_FILE:-"kibana-${KIBANA_VERSION}.tar.gz"}
 KIBANA_URL=${KIBANA_URL:-"https://download.elastic.co/kibana/kibana/${KIBANA_FILE}"}
 SHA1_EXT=${SHA1_EXT:-".sha1.txt"}
 DOCKERIZE_VERSION=${DOCKERIZE_VERSION:-"v0.2.1-jsonQuery-templateDirs"}
