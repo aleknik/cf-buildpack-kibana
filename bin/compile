@@ -44,7 +44,7 @@ if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
 	step "downloaded ${DOCKERIZE_URL}"
 fi
 
-if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION}-linux-x86_64 ]]; then
+if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
 	start "Installing Kibana ${KIBANA_VERSION}"
 	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
 
@@ -60,7 +60,7 @@ fi
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
 ---
 default_process_types:
-  web: dockerize -template kibana.yml:kibana-${KIBANA_VERSION}-linux-x86_64/config/kibana.yml kibana-${KIBANA_VERSION}-linux-x86_64/bin/kibana
+  web: dockerize -template kibana.yml:kibana-${KIBANA_VERSION}/config/kibana.yml kibana-${KIBANA_VERSION}/bin/kibana
 EOF
 
 mkdir -p ${BUILDDIR}/.profile.d
