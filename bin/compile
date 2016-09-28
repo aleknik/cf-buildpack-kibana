@@ -78,6 +78,6 @@ ES_PORT=$(echo $VCAP_SERVICES | jq '.elk[0].credentials.elasticSearchPort')
 echo '#!/bin/bash' > ${BUILDDIR}/bin/kibana.sh
 echo 'cat kibana.yml' >> ${BUILDDIR}/bin/kibana.sh
 echo 'cat bin/kibana.sh' >> ${BUILDDIR}/bin/kibana.sh
-# echo "kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml" >> ${BUILDDIR}/bin/kibana.sh
-echo "kibana-${KIBANA_VERSION}/bin/kibana -p \$PORT -e http://$ES_HOST:$ES_PORT/" >> ${BUILDDIR}/bin/kibana.sh
+echo "kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml" >> ${BUILDDIR}/bin/kibana.sh
+# echo "kibana-${KIBANA_VERSION}/bin/kibana -p \$PORT -e http://$ES_HOST:$ES_PORT/" >> ${BUILDDIR}/bin/kibana.sh
 chmod +x ${BUILDDIR}/bin/kibana.sh
