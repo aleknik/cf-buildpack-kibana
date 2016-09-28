@@ -60,5 +60,10 @@ fi
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
 ---
 default_process_types:
-  web: bin/dockerize -template kibana.yml:kibana.yml kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml
+  web: bin/dockerize -template kibana.yml:kibana.yml /bin/bash -c bin/kibana.sh
 EOF
+
+echo '#!/bin/bash' > ${BUILDDIR}/bin/kibana.sh
+echo 'cat kibana.yml' >> ${BUILDDIR}/bin/kibana.sh
+echo "kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml" >> ${BUILDDIR}/bin/kibana.sh
+chmod +x ${BUILDDIR}/bin/kibana.sh
