@@ -1,0 +1,16 @@
+#!/bin/bash
+# usage: bin/detect <build-dir>
+BP=$(dirname $(dirname $0))
+source $BP/bin/functions.sh
+
+if [[ -z "${1:-}" ]]; then
+	echo "Missing argument <build-dir>"
+fi
+BUILD=$(cd "${1:-}/" && pwd)
+
+if [[ ! -f "${BUILD}/Kibana" ]]; then
+	exit 1
+fi
+
+echo "Kibana Application"
+exit 0

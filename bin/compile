@@ -1,0 +1,67 @@
+#!/bin/bash
+# usage: bin/compile <build-dir> <cache-dir>
+BP=$(dirname $(dirname $0))
+source $BP/bin/functions.sh
+
+if [[ -z "${1:-}" ]]; then
+	err "Missing argument <build-dir>"
+fi
+BUILDDIR=$(cd "${1:-}/" && pwd)
+
+if [[ -z "${2:-}" ]]; then
+	err "Missing argument <cache-dir>"
+fi
+CACHEDIR=$(cd "${2:-}" && pwd)
+
+if [[ ! -f "${BUILDDIR}/Kibana" ]]; then
+	err "${BUILDDIR}/Kibana not found."
+fi
+
+# Source ubuntu distribution information
+if [[ -f "/etc/lsb-release" ]]; then
+	source /etc/lsb-release
+fi
+
+source ${BUILDDIR}/Kibana
+
+# Default Values
+KIBANA_CMD_ARGS=${KIBANA_CMD_ARGS:-""}
+KIBANA_PLUGINS=${KIBANA_PLUGINS:-""}
+KIBANA_VERSION=${KIBANA_VERSION:-$(cat ${BP}/VERSION)}
+KIBANA_FILE=${KIBANA_FILE:-"kibana-${KIBANA_VERSION}-linux-x86_64.tar.gz"}
+KIBANA_URL=${KIBANA_URL:-"https://download.elastic.co/kibana/kibana/${KIBANA_FILE}"}
+SHA1_EXT=${SHA1_EXT:-".sha1.txt"}
+DOCKERIZE_VERSION=${DOCKERIZE_VERSION:-"v0.2.1-jsonQuery-templateDirs"}
+DOCKERIZE_URL=${DOCKERIZE_URL:-"https://github.com/breml/dockerize/releases/download/v0.2.1-jsonQuery%2BtemplateDirs/dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz"}
+
+mkdir -p ${BUILDDIR}/bin
+
+if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
+	start "Installing dockerize"
+	cd ${BUILDDIR}/bin
+	${CURL} ${DOCKERIZE_URL} | tar zxf -
+	finished
+	step "downloaded ${DOCKERIZE_URL}"
+fi
+
+if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION}-linux-x86_64 ]]; then
+	start "Installing Kibana ${KIBANA_VERSION}"
+	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
+
+	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT}" "${KIBANA_URL}${SHA1_EXT}"
+	cd ${CACHEDIR}
+	sha1sum --check ${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT} | indent
+
+	tar -zx -C ${BUILDDIR} -f ${CACHEDIR}/${KIBANA_FILE}
+	finished
+	step "downloaded ${KIBANA_URL}"
+fi
+
+cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
+---
+default_process_types:
+  web: dockerize -template kibana.yml:kibana-${KIBANA_VERSION}-linux-x86_64/config/kibana.yml kibana-${KIBANA_VERSION}-linux-x86_64/bin/kibana
+EOF
+
+mkdir -p ${BUILDDIR}/.profile.d
+echo 'PATH=$PATH:$HOME/bin' > ${BUILDDIR}/.profile.d/kibana.sh
