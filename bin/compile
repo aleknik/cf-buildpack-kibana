@@ -72,8 +72,8 @@ default_process_types:
   web: bin/dockerize -template kibana.yml:kibana.yml /bin/bash -c bin/kibana.sh
 EOF
 
-ES_HOST=$(echo $VCAP_SERVICES | jq '.elk.[0].credentials.elasticSearchHost')
-ES_PORT=$(echo $VCAP_SERVICES | jq '.elk.[0].credentials.elasticSearchPort')
+ES_HOST=$(echo $VCAP_SERVICES | jq '.elk[0].credentials.elasticSearchHost')
+ES_PORT=$(echo $VCAP_SERVICES | jq '.elk[0].credentials.elasticSearchPort')
 
 echo '#!/bin/bash' > ${BUILDDIR}/bin/kibana.sh
 echo 'cat kibana.yml' >> ${BUILDDIR}/bin/kibana.sh
