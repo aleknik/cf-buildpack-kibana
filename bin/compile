@@ -4,22 +4,17 @@ BP=$(dirname $(dirname $0))
 source $BP/bin/functions.sh
 
 if [[ -z "${1:-}" ]]; then
-	err "Missing argument <build-dir>"
+  err "Missing argument <build-dir>"
 fi
 BUILDDIR=$(cd "${1:-}/" && pwd)
 
 if [[ -z "${2:-}" ]]; then
-	err "Missing argument <cache-dir>"
+  err "Missing argument <cache-dir>"
 fi
 CACHEDIR=$(cd "${2:-}" && pwd)
 
 if [[ ! -f "${BUILDDIR}/Kibana" ]]; then
-	err "${BUILDDIR}/Kibana not found."
-fi
-
-# Source ubuntu distribution information
-if [[ -f "/etc/lsb-release" ]]; then
-	source /etc/lsb-release
+  err "${BUILDDIR}/Kibana not found."
 fi
 
 source ${BUILDDIR}/Kibana
@@ -38,46 +33,46 @@ DOCKERIZE_URL=${DOCKERIZE_URL:-"https://github.com/breml/dockerize/releases/down
 mkdir -p ${BUILDDIR}/bin
 
 if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
-	start "Installing dockerize"
-	cd ${BUILDDIR}/bin
-	${CURL} ${DOCKERIZE_URL} | tar zxf -
-	finished
-	step "downloaded ${DOCKERIZE_URL}"
+  start "Installing dockerize"
+  cd ${BUILDDIR}/bin
+  ${CURL} ${DOCKERIZE_URL} | tar zxf -
+  finished
+  step "downloaded ${DOCKERIZE_URL}"
 fi
 
 if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
-	start "Installing Kibana ${KIBANA_VERSION}"
-	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
+  start "Installing Kibana ${KIBANA_VERSION}"
+  ${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
 
-	${CURL} -o "${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT}" "${KIBANA_URL}${SHA1_EXT}"
-	cd ${CACHEDIR}
-	sha1sum --check ${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT} | indent
+  ${CURL} -o "${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT}" "${KIBANA_URL}${SHA1_EXT}"
+  cd ${CACHEDIR}
+  sha1sum --check ${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT} | indent
 
-	tar -zx -C ${BUILDDIR} -f ${CACHEDIR}/${KIBANA_FILE}
-	finished
-	step "downloaded ${KIBANA_URL}"
+  tar -zx -C ${BUILDDIR} -f ${CACHEDIR}/${KIBANA_FILE}
+  finished
+  step "downloaded ${KIBANA_URL}"
 fi
 
 # Install Kibana Plugins
 if [[ -n ${KIBANA_PLUGINS:-""} ]]; then
-		step "Installing Kibana Plugins"
-        for PLUGIN in "${KIBANA_PLUGINS[@]}"; do
-                start "Installing Kibana Plugin ${PLUGIN}"
-                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i ${PLUGIN} | indent
-                finished
-        done
+  step "Installing Kibana Plugins"
+  for PLUGIN in "${KIBANA_PLUGINS[@]}"; do
+    start "Installing Kibana Plugin ${PLUGIN}"
+    ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i ${PLUGIN} | indent
+    finished
+  done
 fi
 
 # Install Kibana Plugins from URL
 if [[ -n ${KIBANA_PLUGINS_URL:-""} ]]; then
-		step "Installing Kibana Plugins from URL"
-		I=1
-        for PLUGIN in "${KIBANA_PLUGINS_URL[@]}"; do
-                start "Installing Kibana Plugin from URL: ${PLUGIN}"
-                ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i url_plugin_$I -u ${PLUGIN} | indent
-                finished
-                I=$((I+1))
-        done
+  step "Installing Kibana Plugins from URL"
+  I=1
+  for PLUGIN in "${KIBANA_PLUGINS_URL[@]}"; do
+    start "Installing Kibana Plugin from URL: ${PLUGIN}"
+    ${BUILDDIR}/kibana-${KIBANA_VERSION}/bin/kibana plugin -i url_plugin_$I -u ${PLUGIN} | indent
+    finished
+    I=$((I+1))
+  done
 fi
 
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
