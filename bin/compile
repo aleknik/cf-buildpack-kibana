@@ -27,8 +27,11 @@ KIBANA_VERSION=${KIBANA_VERSION:-$(cat ${BP}/VERSION)}
 KIBANA_FILE=${KIBANA_FILE:-"kibana-${KIBANA_VERSION}.tar.gz"}
 KIBANA_URL=${KIBANA_URL:-"https://download.elastic.co/kibana/kibana/${KIBANA_FILE}"}
 SHA1_EXT=${SHA1_EXT:-".sha1.txt"}
+
+# Helper tools
 DOCKERIZE_VERSION=${DOCKERIZE_VERSION:-"v0.3.0"}
 DOCKERIZE_URL=${DOCKERIZE_URL:-"https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz"}
+JQ_URL=${JQ_URL:-"https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"}
 
 mkdir -p ${BUILDDIR}/bin
 
@@ -38,6 +41,15 @@ if [[ ! -f ${BUILDDIR}/bin/dockerize ]]; then
   ${CURL} ${DOCKERIZE_URL} | tar zxf -
   finished
   step "downloaded ${DOCKERIZE_URL}"
+fi
+
+# Install jq
+if [[ ! -f ${BUILDDIR}/bin/jq ]]; then
+  start "Installing jq"
+  ${CURL} -o ${BUILDDIR}/bin/jq ${JQ_URL}
+  chmod +x ${BUILDDIR}/bin/jq
+  finished
+  step "Downloaded ${JQ_URL}"
 fi
 
 if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
@@ -75,8 +87,25 @@ if [[ -n ${KIBANA_PLUGINS_URL:-""} ]]; then
   done
 fi
 
+# memory limit for nodejs gc (--max_old_space_size)
+MEMORY_LIMIT="${MEMORY_LIMIT:-$(echo ${VCAP_APPLICATION} | ${BUILDDIR}/bin/jq '.limits.mem * .75 | floor')}"
+
+step "Create buildpack-release-step.yml"
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
 ---
 default_process_types:
-  web: bin/dockerize -template kibana.yml:kibana.yml kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml
+  web: bin/dockerize -template kibana.yml:kibana.yml /bin/bash -c bin/run.sh
 EOF
+
+step "Create bin/run.sh"
+mkdir -p ${BUILDDIR}/.profile.d
+echo 'PATH=${PATH}:${HOME}/bin' > ${BUILDDIR}/.profile.d/run.sh
+cat << EOF >> ${BUILDDIR}/bin/run.sh
+#!/bin/bash
+export NODE_OPTIONS=--max_old_space_size=${MEMORY_LIMIT}
+\${HOME}/kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml
+EOF
+
+chmod +x ${BUILDDIR}/bin/*.sh
+
+step "Buildpack compile finished"
