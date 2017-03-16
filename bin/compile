@@ -88,7 +88,7 @@ if [[ -n ${KIBANA_PLUGINS_URL:-""} ]]; then
 fi
 
 # memory limit for nodejs gc (--max_old_space_size)
-MEMORY_LIMIT="${MEMORY_LIMIT:-$(echo ${VCAP_APPLICATION} | ${BUILDDIR}/bin/jq '.limits.mem * .75 | floor')}"
+KIBANA_MEMORY_LIMIT="${KIBANA_MEMORY_LIMIT:-$(echo ${VCAP_APPLICATION} | ${BUILDDIR}/bin/jq '.limits.mem * .75 | floor')}"
 
 step "Create buildpack-release-step.yml"
 cat << EOF >> ${BUILDDIR}/buildpack-release-step.yml
@@ -102,7 +102,7 @@ mkdir -p ${BUILDDIR}/.profile.d
 echo 'PATH=${PATH}:${HOME}/bin' > ${BUILDDIR}/.profile.d/run.sh
 cat << EOF >> ${BUILDDIR}/bin/run.sh
 #!/bin/bash
-export NODE_OPTIONS=--max_old_space_size=${MEMORY_LIMIT}
+export NODE_OPTIONS=--max_old_space_size=${KIBANA_MEMORY_LIMIT}
 \${HOME}/kibana-${KIBANA_VERSION}/bin/kibana -c kibana.yml
 EOF
 
