@@ -56,9 +56,7 @@ if [[ ! -d ${BUILDDIR}/kibana-${KIBANA_VERSION} ]]; then
   start "Installing Kibana ${KIBANA_VERSION}"
   ${CURL} -o "${CACHEDIR}/${KIBANA_FILE}" "${KIBANA_URL}"
 
-  # ${CURL} -o "${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT}" "${KIBANA_URL}${SHA1_EXT}"
   cd ${CACHEDIR}
-  # sha1sum --check ${CACHEDIR}/${KIBANA_FILE}${SHA1_EXT} | indent
 
   tar -zx -C ${BUILDDIR} -f ${CACHEDIR}/${KIBANA_FILE}
   finished
